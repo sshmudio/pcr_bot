@@ -1,0 +1,46 @@
+import logging
+from aiogram import Bot, Dispatcher, executor, types
+from config import TOKEN
+import redis
+
+logging.basicConfig(level=logging.INFO)
+
+bot = Bot(token=TOKEN)
+dp = Dispatcher(bot)
+
+@dp.message_handler(commands=["start"])
+async def cmd_start(message: types.Message):
+    poll_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    poll_keyboard.add(
+        types.KeyboardButton(text="Пополнить баланс"),
+        types.KeyboardButton(text="Получить помощь"),
+        types.KeyboardButton(text="Отмена"),
+        )
+
+    await message.answer("Вы в меню генерации ПЦР!", reply_markup=poll_keyboard)
+
+@dp.message_handler(content_types=["text"])
+def handle_text(message):
+
+    print(message)
+    your_str = message.text
+
+
+@dp.message_handler(lambda message: message.text == "Пополнить баланс")
+async def top_up(message: types.Message):
+    # tou_up_menu = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    # tou_up_menu.add(types.ReplyKeyboardRemove())
+    await message.answer("Введите сумму пополнения")
+
+
+
+@dp.message_handler(lambda message: message.text == "Отмена")
+async def action_cancel(message: types.Message):
+    remove_keyboard = types.ReplyKeyboardRemove()
+    await message.answer(
+        "Действие отменено. Введите /start, чтобы начать заново.",
+        reply_markup=remove_keyboard)
+
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True)
